@@ -35,8 +35,9 @@ namespace Swashbuckle.Application
         private Func<HttpRequestMessage, string> _rootUrlResolver;
 
         private Func<ISwaggerProvider, ISwaggerProvider> _customProviderFactory;
+	    private AutoRestEnumSupportType? _autoRestEnumSupport;
 
-        public SwaggerDocsConfig()
+	    public SwaggerDocsConfig()
         {
             _versionInfoBuilder = new VersionInfoBuilder();
             _securitySchemeBuilders = new Dictionary<string, SecuritySchemeBuilder>();
@@ -155,7 +156,12 @@ namespace Swashbuckle.Application
             _schemaIdSelector = t => t.FriendlyId(true);
         }
 
-        public void DescribeAllEnumsAsStrings(bool camelCase = false)
+	    public void EnableAutoRestSupportForEnums(AutoRestEnumSupportType type = AutoRestEnumSupportType.Enum)
+	    {
+		    _autoRestEnumSupport = type;
+
+	    }
+		public void DescribeAllEnumsAsStrings(bool camelCase = false)
         {
             _describeAllEnumsAsStrings = true;
             _describeStringEnumsInCamelCase = camelCase;
@@ -233,7 +239,8 @@ namespace Swashbuckle.Application
                 describeStringEnumsInCamelCase: _describeStringEnumsInCamelCase,
                 operationFilters: _operationFilters.Select(factory => factory()),
                 documentFilters: _documentFilters.Select(factory => factory()),
-                conflictingActionsResolver: _conflictingActionsResolver
+                conflictingActionsResolver: _conflictingActionsResolver,
+				autoRestEnumSupport: _autoRestEnumSupport
             );
 
             var defaultProvider = new SwaggerGenerator(

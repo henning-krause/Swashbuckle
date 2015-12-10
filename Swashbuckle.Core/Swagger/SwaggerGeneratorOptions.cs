@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http.Description;
+using Swashbuckle.Application;
 
 namespace Swashbuckle.Swagger
 {
@@ -23,8 +24,9 @@ namespace Swashbuckle.Swagger
             bool describeStringEnumsInCamelCase = false,
             IEnumerable<IOperationFilter> operationFilters = null,
             IEnumerable<IDocumentFilter> documentFilters = null,
-            Func<IEnumerable<ApiDescription>, ApiDescription> conflictingActionsResolver = null
-            )
+            Func<IEnumerable<ApiDescription>, ApiDescription> conflictingActionsResolver = null,
+			AutoRestEnumSupportType? autoRestEnumSupport = null
+			)
         {
             VersionSupportResolver = versionSupportResolver;
             Schemes = schemes;
@@ -39,9 +41,11 @@ namespace Swashbuckle.Swagger
             SchemaIdSelector = schemaIdSelector ?? DefaultSchemaIdSelector;
             DescribeAllEnumsAsStrings = describeAllEnumsAsStrings;
             DescribeStringEnumsInCamelCase = describeStringEnumsInCamelCase;
-            OperationFilters = operationFilters ?? new List<IOperationFilter>();
+	        AutoRestEnumSupport = autoRestEnumSupport;
+	        OperationFilters = operationFilters ?? new List<IOperationFilter>();
             DocumentFilters = documentFilters ?? new List<IDocumentFilter>();
             ConflictingActionsResolver = conflictingActionsResolver ?? DefaultConflictingActionsResolver;
+			
         }
 
         public Func<ApiDescription, string, bool> VersionSupportResolver { get; private set; }
@@ -69,8 +73,9 @@ namespace Swashbuckle.Swagger
         public bool DescribeAllEnumsAsStrings { get; private set; }
 
         public bool DescribeStringEnumsInCamelCase { get; private set; }
+	    public AutoRestEnumSupportType? AutoRestEnumSupport { get; set; }
 
-        public IEnumerable<IOperationFilter> OperationFilters { get; private set; }
+	    public IEnumerable<IOperationFilter> OperationFilters { get; private set; }
 
         public IEnumerable<IDocumentFilter> DocumentFilters { get; private set; }
 

@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Converters;
 using System.Net.Http.Formatting;
+using Swashbuckle.Application;
 
 namespace Swashbuckle.Swagger
 {
@@ -25,8 +26,9 @@ namespace Swashbuckle.Swagger
         private readonly Func<Type, string> _schemaIdSelector;
         private readonly bool _describeAllEnumsAsStrings;
         private readonly bool _describeStringEnumsInCamelCase;
+	    private readonly AutoRestEnumSupportType? _autoRestEnumSupport;
 
-        private readonly IContractResolver _contractResolver;
+	    private readonly IContractResolver _contractResolver;
 
         private IDictionary<Type, SchemaInfo> _referencedTypes;
         private class SchemaInfo
@@ -43,7 +45,8 @@ namespace Swashbuckle.Swagger
             bool ignoreObsoleteProperties,
             Func<Type, string> schemaIdSelector,
             bool describeAllEnumsAsStrings,
-            bool describeStringEnumsInCamelCase)
+            bool describeStringEnumsInCamelCase,
+			AutoRestEnumSupportType? autoRestEnumSupport)
         {
             _jsonSerializerSettings = jsonSerializerSettings;
             _customSchemaMappings = customSchemaMappings;
@@ -53,8 +56,9 @@ namespace Swashbuckle.Swagger
             _schemaIdSelector = schemaIdSelector;
             _describeAllEnumsAsStrings = describeAllEnumsAsStrings;
             _describeStringEnumsInCamelCase = describeStringEnumsInCamelCase;
+	        _autoRestEnumSupport = autoRestEnumSupport;
 
-            _contractResolver = jsonSerializerSettings.ContractResolver ?? new DefaultContractResolver();
+	        _contractResolver = jsonSerializerSettings.ContractResolver ?? new DefaultContractResolver();
             _referencedTypes = new Dictionary<Type, SchemaInfo>();
             Definitions = new Dictionary<string, Schema>();
         }
@@ -165,7 +169,7 @@ namespace Swashbuckle.Swagger
             var stringEnumConverter = primitiveContract.Converter as StringEnumConverter
                 ?? _jsonSerializerSettings.Converters.OfType<StringEnumConverter>().FirstOrDefault();
 
-            if (_describeAllEnumsAsStrings || stringEnumConverter != null)
+            if (_describeAllEnumsAsStrings || stringEnumConverter != null || _autoRestEnumSupport != null)
             {
                 var camelCase = _describeStringEnumsInCamelCase
                     || (stringEnumConverter != null && stringEnumConverter.CamelCaseText);
@@ -175,7 +179,12 @@ namespace Swashbuckle.Swagger
                     type = "string",
                     @enum = camelCase
                         ? type.GetEnumNames().Select(name => name.ToCamelCase()).ToArray()
-                        : type.GetEnumNames()
+                        : type.GetEnumNames(),
+					xmsenum = _autoRestEnumSupport != null ? new MSEnumExtension
+					{
+						name = type.Name,
+						modelAsString = _autoRestEnumSupport == AutoRestEnumSupportType.StaticStrings,
+					} : null
                 };
             }
 
