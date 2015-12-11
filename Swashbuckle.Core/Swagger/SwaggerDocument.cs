@@ -225,9 +225,18 @@ namespace Swashbuckle.Swagger
         public object example;
 
         public Dictionary<string, object> vendorExtensions = new Dictionary<string, object>();
+
+		[JsonProperty("x-ms-enum")]
+		public MSEnumExtension xmsenum;
     }
 
-    public class PartialSchema
+	public class MSEnumExtension
+	{
+		public string name;
+		public bool modelAsString;
+	}
+
+	public class PartialSchema
     {
         public string type;
 
